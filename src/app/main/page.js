@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { extractVideoId, mockFetchSubtitle, parseSRT } from '@/lib/youtube'
 import { defaultSRT, developerInfo } from '@/lib/constants'
 
@@ -15,7 +16,6 @@ export default function MainStudio() {
   const animationRef = useRef(null)
 
   useEffect(() => {
-    // Load default SRT on mount
     setSrtContent(defaultSRT)
   }, [])
 
@@ -31,20 +31,17 @@ export default function MainStudio() {
       setError('Please enter a YouTube link')
       return
     }
-
     const videoId = extractVideoId(youtubeLink)
     if (!videoId) {
       setError('Invalid YouTube link format')
       return
     }
-
     setError(null)
     setIsLoading(true)
-
     try {
       const srt = await mockFetchSubtitle(videoId)
       setSrtContent(srt)
-      showToast('success', 'SRT fetched successfully!')
+      showToast('success', 'SRT fetched!')
     } catch (err) {
       setError('Failed to fetch SRT')
     } finally {
@@ -62,12 +59,11 @@ export default function MainStudio() {
       showToast('error', 'Nothing to copy')
       return
     }
-
     try {
       await navigator.clipboard.writeText(srtContent)
-      showToast('success', 'Copied to clipboard!')
-    } catch (err) {
-      showToast('error', 'Failed to copy to clipboard')
+      showToast('success', 'Copied!')
+    } catch {
+      showToast('error', 'Copy failed')
     }
   }
 
@@ -76,11 +72,9 @@ export default function MainStudio() {
       showToast('error', 'Nothing to download')
       return
     }
-
     const timestamp = new Date().toISOString().slice(0, 10)
     const blob = new Blob([srtContent], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
-    
     const a = document.createElement('a')
     a.href = url
     a.download = `burme_subtitle_${timestamp}.srt`
@@ -88,31 +82,26 @@ export default function MainStudio() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-
     showToast('success', 'Download started!')
   }
 
   const handleAnimate = () => {
     if (!srtContent) {
-      showToast('error', 'No SRT content to animate')
+      showToast('error', 'No SRT content')
       return
     }
-
     const subtitles = parseSRT(srtContent)
     if (subtitles.length === 0) {
-      showToast('error', 'No SRT content to animate')
+      showToast('error', 'No subtitles to animate')
       return
     }
-
     setIsAnimating(true)
     let index = 0
     setCurrentSubtitle(subtitles[0])
-
     animationRef.current = setInterval(() => {
       index = (index + 1) % subtitles.length
       setCurrentSubtitle(subtitles[index])
     }, 1700)
-
     showToast('success', 'Animation started!')
   }
 
@@ -123,7 +112,7 @@ export default function MainStudio() {
     }
     setIsAnimating(false)
     setCurrentSubtitle('')
-    showToast('success', 'Animation stopped!')
+    showToast('success', 'Stopped!')
   }
 
   return (
@@ -141,9 +130,27 @@ export default function MainStudio() {
                 <p className="text-sm text-gray-500">SRT Studio</p>
               </div>
             </div>
-            <a href="/" className="social-btn p-3 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center gap-2">
-              <i className="fas fa-home"></i>
-            </a>
+            <Link href="/" className="social-btn px-3 py-2 bg-gray-100 text-gray-600 rounded-xl">
+              <i className="fas fa-sign-out-alt"></i>
+            </Link>
+          </div>
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="glass-card rounded-2xl p-4 mb-6 shadow-lg">
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link href="/main" className="social-btn px-5 py-3 bg-blue-50 border-2 border-blue-200 text-blue-600 font-semibold rounded-xl flex items-center gap-2">
+              <i className="fas fa-closed-captioning"></i>
+              <span>SRT Studio</span>
+            </Link>
+            <Link href="/translate" className="social-btn px-5 py-3 bg-purple-50 border-2 border-purple-200 text-purple-600 font-semibold rounded-xl flex items-center gap-2">
+              <i className="fas fa-language"></i>
+              <span>Translate</span>
+            </Link>
+            <Link href="/tts" className="social-btn px-5 py-3 bg-cyan-50 border-2 border-cyan-200 text-cyan-600 font-semibold rounded-xl flex items-center gap-2">
+              <i className="fas fa-microphone"></i>
+              <span>Text to Speech</span>
+            </Link>
           </div>
         </div>
 
@@ -162,30 +169,25 @@ export default function MainStudio() {
                 onChange={(e) => setYoutubeLink(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleFetch()}
                 placeholder="https://www.youtube.com/watch?v=..." 
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/80 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/80 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <button 
               onClick={handleFetch}
               disabled={isLoading}
-              className="social-btn px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 flex items-center gap-2 disabled:opacity-50"
+              className="social-btn px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl flex items-center gap-2 disabled:opacity-50"
             >
-              {isLoading ? (
-                <i className="fas fa-spinner fa-spin"></i>
-              ) : (
-                <i className="fas fa-download"></i>
-              )}
-              <span>Fetch SRT</span>
+              {isLoading ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-download"></i>}
+              <span>Fetch</span>
             </button>
             <button 
               onClick={handleClear}
-              className="social-btn px-5 py-3 bg-white/80 border border-gray-300 text-gray-600 font-semibold rounded-xl flex items-center gap-2 hover:bg-gray-50"
+              className="social-btn px-5 py-3 bg-white/80 border border-gray-300 text-gray-600 rounded-xl flex items-center gap-2"
             >
               <i className="fas fa-times"></i>
               <span>Clear</span>
             </button>
           </div>
-
           {error && (
             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 flex items-center gap-2">
               <i className="fas fa-exclamation-circle"></i>
@@ -204,24 +206,18 @@ export default function MainStudio() {
           <textarea 
             value={srtContent}
             onChange={(e) => setSrtContent(e.target.value)}
-            className={`w-full h-64 px-4 py-3 rounded-xl border border-gray-200 bg-white/80 font-mono text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none ${isLoading ? 'pulse-animation' : ''}`}
-            placeholder="Paste or type SRT content here..."
+            className="w-full h-64 px-4 py-3 rounded-xl border border-gray-200 bg-white/80 font-mono text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            placeholder="Paste or type SRT content..."
           />
           
           <div className="flex flex-col md:flex-row gap-3 mt-4">
-            <button 
-              onClick={handleCopy}
-              className="social-btn flex-1 px-6 py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-100"
-            >
+            <button onClick={handleCopy} className="social-btn flex-1 px-6 py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold rounded-xl flex items-center justify-center gap-2">
               <i className="fas fa-copy"></i>
-              <span>Copy to Clipboard</span>
+              <span>Copy</span>
             </button>
-            <button 
-              onClick={handleDownload}
-              className="social-btn flex-1 px-6 py-3 bg-amber-50 border border-amber-200 text-amber-700 font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-amber-100"
-            >
+            <button onClick={handleDownload} className="social-btn flex-1 px-6 py-3 bg-amber-50 border border-amber-200 text-amber-700 font-semibold rounded-xl flex items-center justify-center gap-2">
               <i className="fas fa-download"></i>
-              <span>Download SRT</span>
+              <span>Download</span>
             </button>
           </div>
         </div>
@@ -230,78 +226,51 @@ export default function MainStudio() {
         <div className="glass-card rounded-2xl p-6 mb-6 shadow-lg">
           <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <i className="fas fa-play-circle text-cyan-500"></i>
-            <span>Animation Preview</span>
+            <span>Preview</span>
           </h2>
           
-          <div className="w-full h-32 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 border border-blue-200 flex items-center justify-center mb-4 overflow-hidden">
+          <div className="w-full h-32 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 border border-blue-200 flex items-center justify-center mb-4">
             {currentSubtitle ? (
-              <p className="text-xl md:text-2xl font-semibold text-gray-800 text-center px-4 subtitle-bubble">
-                {currentSubtitle}
-              </p>
+              <p className="text-xl md:text-2xl font-semibold text-gray-800 text-center px-4">{currentSubtitle}</p>
             ) : (
-              <p className="text-xl md:text-2xl font-semibold text-gray-400 text-center px-4">
-                Subtitle text will appear here...
-              </p>
+              <p className="text-xl md:text-2xl font-semibold text-gray-400 text-center">Subtitle text...</p>
             )}
           </div>
           
           <button 
             onClick={isAnimating ? handleStopAnimate : handleAnimate}
             className={`social-btn w-full px-6 py-3 font-semibold rounded-xl flex items-center justify-center gap-2 ${
-              isAnimating 
-                ? 'bg-red-50 border border-red-200 text-red-600 hover:bg-red-100' 
-                : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30'
+              isAnimating ? 'bg-red-50 border border-red-200 text-red-600' : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white'
             }`}
           >
             <i className={`fas ${isAnimating ? 'fa-stop' : 'play'}`}></i>
-            <span>{isAnimating ? 'Stop' : 'Start Animation'}</span>
+            <span>{isAnimating ? 'Stop' : 'Start'}</span>
           </button>
         </div>
 
-        {/* Developer Info Footer */}
+        {/* Developer Info */}
         <div className="glass-card rounded-2xl p-6 shadow-lg">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <i className="fas fa-user-circle text-blue-500"></i>
-            <span>Developer Info</span>
-          </h2>
-          
           <div className="flex flex-wrap items-center justify-center gap-6">
             <div className="flex items-center gap-2 text-gray-700">
               <i className="fas fa-code-branch text-blue-500"></i>
               <span className="font-medium">{developerInfo.name}</span>
-              <span className="text-gray-400 text-sm">({developerInfo.title})</span>
             </div>
-            
             <div className="flex items-center gap-2 text-gray-700">
               <i className="fab fa-tiktok"></i>
-              <span className="font-medium">{developerInfo.tiktok}</span>
+              <span>{developerInfo.tiktok}</span>
             </div>
-            
             <div className="flex items-center gap-2 text-gray-700">
               <i className="fas fa-phone-alt text-green-500"></i>
-              <span className="font-medium">{developerInfo.phone}</span>
+              <span>{developerInfo.phone}</span>
             </div>
           </div>
-          
-          <p className="text-center text-xs text-gray-400 mt-4">
-            <i className="fas fa-heart text-red-500"></i>
-            {' '}Built with ❤️ for Myanmar creators
-          </p>
-        </div>
-
-        {/* API Note */}
-        <div className="mt-4 text-center text-xs text-gray-400">
-          <p>API Route: <code className="bg-gray-100 px-2 py-1 rounded">POST /api/subtitle</code> (on Vercel)</p>
         </div>
       </div>
 
-      {/* Toast Notification */}
       {toast.show && (
-        <div id="toast" className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-xl z-50">
-          <div className="flex items-center gap-2">
-            <i className={`fas ${toast.type === 'success' ? 'fa-check-circle text-emerald-400' : 'fa-exclamation-circle text-red-400'}`}></i>
-            <span>{toast.message}</span>
-          </div>
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-xl z-50">
+          <i className={`fas ${toast.type === 'success' ? 'fa-check-circle text-emerald-400' : 'fa-exclamation-circle text-red-400'} mr-2`}></i>
+          {toast.message}
         </div>
       )}
     </main>
