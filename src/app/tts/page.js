@@ -10,19 +10,20 @@ export default function TTSPage() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioUrl, setAudioUrl] = useState(null)
   const [toast, setToast] = useState({ show: false, message: '', type: '' })
+  const [error, setError] = useState('')
   const audioRef = useRef(null)
 
-  // Burmese voices (Thi Ha = boy, Nilar = girl)
+  // Burmese voices
   const burmeseVoices = [
-    { id: 'pNInz6ogphA2injdU1Kh', name: 'သီဟ (Thi Ha)', gender: 'Boy', lang: 'Myanmar' },
-    { id: 'cgSgspmF5nEAl3hHy3UKj52VjhHpN3u2o', name: 'နီလာ (Nilar)', gender: 'Girl', lang: 'Myanmar' },
+    { id: 'pNInz6ogphA2injdU1Kh', name: 'Thi Ha', gender: 'Boy' },
+    { id: 'cgSgspmF5nEAl3hHy3UKj52VjhHpN3u2o', name: 'Nilar', gender: 'Girl' },
   ]
 
   // English voices
   const englishVoices = [
-    { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', lang: 'English' },
-    { id: 'AZnzlk1Xvlr_ohmBJOsoN', name: 'Arnold', lang: 'English' },
-    { id: 'cRDlDclOWrAANzGnzE', name: 'Sarah', lang: 'English' },
+    { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel' },
+    { id: 'AZnzlk1Xvlr_ohmBJOsoN', name: 'Arnold' },
+    { id: 'cRDlDclOWrAANzGnzE', name: 'Sarah' },
   ]
 
   const showToast = (message, type) => {
@@ -31,8 +32,10 @@ export default function TTSPage() {
   }
 
   const handleGenerate = async () => {
+    setError('')
+    
     if (!text.trim()) {
-      showToast('Please enter text', 'error')
+      setError('Please enter text')
       return
     }
 
@@ -52,14 +55,16 @@ export default function TTSPage() {
 
       const data = await response.json()
 
-      if (data.success) {
+      if (data.success && data.audio) {
         setAudioUrl(data.audio)
         showToast('Audio generated!', 'success')
       } else {
+        setError(data.error || 'Generation failed - check API key')
         showToast(data.error || 'Generation failed', 'error')
       }
     } catch (err) {
-      showToast('Error generating audio', 'error')
+      setError('Network error')
+      showToast('Network error', 'error')
     } finally {
       setIsLoading(false)
     }
@@ -91,7 +96,6 @@ export default function TTSPage() {
       a.href = audioUrl
       a.download = 'burme-tts.mp3'
       a.click()
-      showToast('Download started!', 'success')
     }
   }
 
@@ -116,29 +120,25 @@ export default function TTSPage() {
           </div>
         </div>
 
-        {/* Navigation Buttons */}
+        {/* Navigation */}
         <div className="glass-card rounded-2xl p-4 mb-6 shadow-lg">
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/main" className="social-btn px-5 py-3 bg-blue-50 border-2 border-blue-200 text-blue-600 font-semibold rounded-xl flex items-center gap-2">
-              <i className="fas fa-closed-captioning"></i>
-              <span>SRT Studio</span>
+              <i className="fas fa-closed-captioning"></i><span>SRT</span>
             </Link>
             <Link href="/translate" className="social-btn px-5 py-3 bg-purple-50 border-2 border-purple-200 text-purple-600 font-semibold rounded-xl flex items-center gap-2">
-              <i className="fas fa-language"></i>
-              <span>Translate</span>
+              <i className="fas fa-language"></i><span>Translate</span>
             </Link>
             <Link href="/tts" className="social-btn px-5 py-3 bg-cyan-50 border-2 border-cyan-200 text-cyan-600 font-semibold rounded-xl flex items-center gap-2">
-              <i className="fas fa-microphone"></i>
-              <span>Text to Speech</span>
+              <i className="fas fa-microphone"></i><span>TTS</span>
             </Link>
           </div>
         </div>
 
-        {/* Burmese Voice Selection */}
+        {/* Burmese Voices */}
         <div className="glass-card rounded-2xl p-4 mb-4">
-          <label className="text-sm text-gray-600 mb-2 block flex items-center gap-2">
-            <i className="fas fa-flag text-red-500"></i>
-            Burmese Voices:
+          <label className="text-sm text-gray-600 mb-2 block">
+            <i className="fas fa-flag text-red-500 mr-2"></i>Burmese Voices:
           </label>
           <div className="grid grid-cols-2 gap-2">
             {burmeseVoices.map(voice => (
@@ -158,11 +158,10 @@ export default function TTSPage() {
           </div>
         </div>
 
-        {/* English Voice Selection */}
+        {/* English Voices */}
         <div className="glass-card rounded-2xl p-4 mb-4">
-          <label className="text-sm text-gray-600 mb-2 block flex items-center gap-2">
-            <i className="fab fa-english text-blue-500"></i>
-            English Voices:
+          <label className="text-sm text-gray-600 mb-2 block">
+            <i className="fas fa-globe text-blue-500 mr-2"></i>English Voices:
           </label>
           <div className="grid grid-cols-3 gap-2">
             {englishVoices.map(voice => (
@@ -176,7 +175,6 @@ export default function TTSPage() {
                 }`}
               >
                 <div className="font-medium">{voice.name}</div>
-                <div className="text-xs opacity-70">{voice.lang}</div>
               </button>
             ))}
           </div>
@@ -189,17 +187,24 @@ export default function TTSPage() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             className="w-full h-32 p-3 rounded-xl border border-gray-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-cyan-500 mb-4"
-            placeholder="မြန်မာစာ သို့မဟုတ် အင်္ဂလိပ်စာ ရိုက်ထည့်ပါ..."
+            placeholder="Type text here..."
             maxLength={500}
           />
           <div className="flex justify-between text-sm text-gray-400 mb-4">
-            <span>{text.length}/500 characters</span>
+            <span>{text.length}/500</span>
           </div>
+          
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+              {error}
+            </div>
+          )}
+          
           <div className="flex flex-wrap justify-center gap-3">
-            <button onClick={() => setText('')} className="social-btn px-4 py-2 bg-red-50 text-red-600 rounded-xl border border-red-200">
+            <button onClick={() => { setText(''); setError(''); }} className="social-btn px-4 py-2 bg-red-50 text-red-600 rounded-xl border border-red-200">
               <i className="fas fa-trash mr-2"></i>Clear
             </button>
-            <button onClick={handleGenerate} disabled={isLoading || !text.trim()} className="social-btn px-6 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl">
+            <button onClick={handleGenerate} disabled={isLoading || !text.trim()} className="social-btn px-6 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl disabled:opacity-50">
               {isLoading ? <><i className="fas fa-spinner fa-spin mr-2"></i>Generating...</> : <><i className="fas fa-microphone mr-2"></i>Generate</>}
             </button>
           </div>
@@ -212,8 +217,7 @@ export default function TTSPage() {
             <audio ref={audioRef} src={audioUrl} onEnded={() => setIsPlaying(false)} className="w-full mb-4" controls />
             <div className="flex flex-wrap justify-center gap-3">
               <button onClick={handlePlay} className="social-btn px-4 py-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-200">
-                <i className={`fas ${isPlaying ? 'fa-pause' : 'fa-play'} mr-2`}></i>
-                {isPlaying ? 'Pause' : 'Play'}
+                <i className={`fas ${isPlaying ? 'fa-pause' : 'fa-play'} mr-2`}></i>{isPlaying ? 'Pause' : 'Play'}
               </button>
               <button onClick={handleStop} className="social-btn px-4 py-2 bg-gray-100 text-gray-600 rounded-xl">
                 <i className="fas fa-stop mr-2"></i>Stop
@@ -228,13 +232,11 @@ export default function TTSPage() {
         {/* Footer */}
         <div className="glass-card rounded-2xl p-4 text-center">
           <p className="text-xs text-gray-400">
-            <i className="fas fa-heart text-red-500 mr-1"></i>
-            Powered by ElevenLabs AI
+            <i className="fas fa-heart text-red-500 mr-1"></i>Powered by ElevenLabs AI
           </p>
         </div>
       </div>
 
-      {/* Toast */}
       {toast.show && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-xl z-50">
           <i className={`fas ${toast.type === 'success' ? 'fa-check-circle text-emerald-400' : 'fa-exclamation-circle text-red-400'} mr-2`}></i>
