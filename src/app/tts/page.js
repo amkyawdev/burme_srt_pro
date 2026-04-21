@@ -12,9 +12,10 @@ export default function TTSPage() {
   const [toast, setToast] = useState({ show: false, message: '', type: '' })
   const audioRef = useRef(null)
 
-  // Burmese/Myanmar voices
+  // Burmese voices (Thi Ha = boy, Nilar = girl)
   const burmeseVoices = [
-    { id: 'pNInz6ogphA2injdU1Kh', name: 'Ko Thi', lang: 'Myanmar' },
+    { id: 'pNInz6ogphA2injdU1Kh', name: 'သီဟ (Thi Ha)', gender: 'Boy', lang: 'Myanmar' },
+    { id: 'cgSgspmF5nEAl3hHy3UKj52VjhHpN3u2o', name: 'နီလာ (Nilar)', gender: 'Girl', lang: 'Myanmar' },
   ]
 
   // English voices
@@ -22,8 +23,6 @@ export default function TTSPage() {
     { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', lang: 'English' },
     { id: 'AZnzlk1Xvlr_ohmBJOsoN', name: 'Arnold', lang: 'English' },
     { id: 'cRDlDclOWrAANzGnzE', name: 'Sarah', lang: 'English' },
-    { id: 'EXwtyqC6oPCE7gYKv4F4', name: 'Josh', lang: 'English' },
-    { id: 'GBv5m9HGORWcN6bZQWk', name: 'Sam', lang: 'English' },
   ]
 
   const showToast = (message, type) => {
@@ -90,7 +89,7 @@ export default function TTSPage() {
     if (audioUrl) {
       const a = document.createElement('a')
       a.href = audioUrl
-      a.download = 'burme-tts-audio.mp3'
+      a.download = 'burme-tts.mp3'
       a.click()
       showToast('Download started!', 'success')
     }
@@ -139,9 +138,9 @@ export default function TTSPage() {
         <div className="glass-card rounded-2xl p-4 mb-4">
           <label className="text-sm text-gray-600 mb-2 block flex items-center gap-2">
             <i className="fas fa-flag text-red-500"></i>
-            Burmese Voice:
+            Burmese Voices:
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {burmeseVoices.map(voice => (
               <button
                 key={voice.id}
@@ -153,7 +152,7 @@ export default function TTSPage() {
                 }`}
               >
                 <div className="font-medium">{voice.name}</div>
-                <div className="text-xs opacity-70"><i className="fas fa-flag"></i> {voice.lang}</div>
+                <div className="text-xs opacity-70">{voice.gender}</div>
               </button>
             ))}
           </div>
@@ -165,7 +164,7 @@ export default function TTSPage() {
             <i className="fab fa-english text-blue-500"></i>
             English Voices:
           </label>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {englishVoices.map(voice => (
               <button
                 key={voice.id}
@@ -185,7 +184,7 @@ export default function TTSPage() {
 
         {/* Text Input */}
         <div className="glass-card rounded-2xl p-6 mb-6">
-          <label className="text-sm font-semibold text-gray-700 mb-2 block">Enter Text (Burmese/English):</label>
+          <label className="text-sm font-semibold text-gray-700 mb-2 block">Enter Text:</label>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
