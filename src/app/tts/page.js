@@ -12,7 +12,13 @@ export default function TTSPage() {
   const [toast, setToast] = useState({ show: false, message: '', type: '' })
   const audioRef = useRef(null)
 
-  const voices = [
+  // Burmese/Myanmar voices
+  const burmeseVoices = [
+    { id: 'pNInz6ogphA2injdU1Kh', name: 'Ko Thi', lang: 'Myanmar' },
+  ]
+
+  // English voices
+  const englishVoices = [
     { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', lang: 'English' },
     { id: 'AZnzlk1Xvlr_ohmBJOsoN', name: 'Arnold', lang: 'English' },
     { id: 'cRDlDclOWrAANzGnzE', name: 'Sarah', lang: 'English' },
@@ -129,11 +135,38 @@ export default function TTSPage() {
           </div>
         </div>
 
-        {/* Voice Selection */}
+        {/* Burmese Voice Selection */}
         <div className="glass-card rounded-2xl p-4 mb-4">
-          <label className="text-sm text-gray-600 mb-2 block">Select Voice:</label>
+          <label className="text-sm text-gray-600 mb-2 block flex items-center gap-2">
+            <i className="fas fa-flag text-red-500"></i>
+            Burmese Voice:
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            {burmeseVoices.map(voice => (
+              <button
+                key={voice.id}
+                onClick={() => setVoiceId(voice.id)}
+                className={`p-3 rounded-xl text-center transition ${
+                  voiceId === voice.id
+                    ? 'bg-red-600 text-white'
+                    : 'bg-white text-gray-600 border border-gray-200'
+                }`}
+              >
+                <div className="font-medium">{voice.name}</div>
+                <div className="text-xs opacity-70"><i className="fas fa-flag"></i> {voice.lang}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* English Voice Selection */}
+        <div className="glass-card rounded-2xl p-4 mb-4">
+          <label className="text-sm text-gray-600 mb-2 block flex items-center gap-2">
+            <i className="fab fa-english text-blue-500"></i>
+            English Voices:
+          </label>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-            {voices.map(voice => (
+            {englishVoices.map(voice => (
               <button
                 key={voice.id}
                 onClick={() => setVoiceId(voice.id)}
@@ -152,12 +185,12 @@ export default function TTSPage() {
 
         {/* Text Input */}
         <div className="glass-card rounded-2xl p-6 mb-6">
-          <label className="text-sm font-semibold text-gray-700 mb-2 block">Enter Text:</label>
+          <label className="text-sm font-semibold text-gray-700 mb-2 block">Enter Text (Burmese/English):</label>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
             className="w-full h-32 p-3 rounded-xl border border-gray-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-cyan-500 mb-4"
-            placeholder="Enter text to convert to speech..."
+            placeholder="မြန်မာစာ သို့မဟုတ် အင်္ဂလိပ်စာ ရိုက်ထည့်ပါ..."
             maxLength={500}
           />
           <div className="flex justify-between text-sm text-gray-400 mb-4">
