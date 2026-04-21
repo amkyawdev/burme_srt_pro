@@ -86,7 +86,7 @@ export default function TranslatePage() {
             </div>
             <Link href="/main" className="social-btn px-4 py-2 bg-gray-100 text-gray-600 rounded-xl">
               <i className="fas fa-home mr-2"></i>Home
-            </a>
+            </Link>
           </div>
         </div>
 
