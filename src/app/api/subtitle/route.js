@@ -9,14 +9,7 @@ export async function POST(request) {
     const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
     const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY
 
-    // Extract video ID from link if provided
-    let videoIdToUse = videoId
-    if (youtubeLink && !videoIdToUse) {
-      const match = youtubeLink.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
-      if (match) videoIdToUse = match[1]
-    }
-
-    // Handle Text-to-Speech action
+    // Handle TTS action FIRST
     if (action === 'tts') {
       if (!ELEVENLABS_API_KEY) {
         return NextResponse.json({ success: false, error: 'TTS API key not configured' })
@@ -60,7 +53,7 @@ export async function POST(request) {
       }
     }
 
-    // Handle Translation action
+    // Handle Translation action SECOND
     if (action === 'translate') {
       if (!GEMINI_API_KEY) {
         return NextResponse.json({ success: false, error: 'Translation API key not configured' })
@@ -71,7 +64,6 @@ export async function POST(request) {
 
       try {
         const targetLang = translateTo || 'Myanmar'
-
         const translatePrompt = `Translate to ${targetLang}: ${text}`
 
         const geminiRes = await fetch(
@@ -104,7 +96,13 @@ export async function POST(request) {
       }
     }
 
-    // Handle subtitle generation
+    // Handle SRT from YouTube link (only if no action specified)
+    let videoIdToUse = videoId
+    if (youtubeLink && !videoIdToUse) {
+      const match = youtubeLink.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
+      if (match) videoIdToUse = match[1]
+    }
+
     if (!videoIdToUse) {
       return NextResponse.json({ success: false, error: 'Video ID or link required' })
     }
@@ -130,7 +128,6 @@ export async function POST(request) {
       }
     }
 
-    // Use Gemini to generate SRT
     if (GEMINI_API_KEY) {
       try {
         const geminiPrompt = `Create SRT subtitle for: ${videoTitle}. ${videoDescription}. Generate 5-8 lines.`
