@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
 
-// Single API key for both YouTube and Gemini
 const API_KEY = process.env.GEMINI_API_KEY || process.env.YOUTUBE_API_KEY
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY
 
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { videoId, youtubeLink } = body
+    const { videoId, youtubeLink, text, voiceId, action } = body
 
     // Extract video ID from link if provided
     let videoIdToUse = videoId
@@ -15,6 +15,50 @@ export async function POST(request) {
       if (match) videoIdToUse = match[1]
     }
 
+    // Handle Text-to-Speech action
+    if (action === 'tts' && ELEVENLABS_API_KEY && text) {
+      try {
+        const voice = voiceId || '21m00Tcm4TlvDq8ikWAM' // Rachel voice default
+        
+        const ttsRes = await fetch(
+          `https://api.elevenlabs.io/v1/text-to-speech/${voice}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'xi-api-key': ELEVENLABS_API_KEY
+            },
+            body: JSON.stringify({
+              text: text,
+              model_id: 'eleven_monolingual_v1',
+              voice_settings: {
+                stability: 0.5,
+                similarity_boost: 0.5
+              }
+            })
+          }
+        )
+
+        if (ttsRes.ok) {
+          const audioBuffer = await ttsRes.arrayBuffer()
+          const base64Audio = Buffer.from(audioBuffer).toString('base64')
+          
+          return NextResponse.json({
+            success: true,
+            audio: `data:audio/mpeg;base64,${base64Audio}`,
+            source: 'ElevenLabs'
+          })
+        } else {
+          const errorData = await ttsRes.json()
+          return NextResponse.json({ error: errorData.detail || 'TTS failed' }, { status: 400 })
+        }
+      } catch (e) {
+        console.error('ElevenLabs error:', e)
+        return NextResponse.json({ error: 'TTS service error' }, { status: 500 })
+      }
+    }
+
+    // Handle subtitle generation
     if (!videoIdToUse) {
       return NextResponse.json({ error: 'Video ID or link required' }, { status: 400 })
     }
@@ -67,7 +111,6 @@ Include Myanmar language support. Make it natural.`
           const generatedText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text
           
           if (generatedText) {
-            // Extract SRT format from response
             const srtMatch = generatedText.match(/[\s\S]*?^\d+\s*\n\d{2}:\d{2}:\d{2},\d{3}\s*-->\s*\d{2}:\d{2}:\d{2},\d{3}[\s\S]*/m)
             if (srtMatch) {
               return NextResponse.json({
