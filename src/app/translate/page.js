@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 
 import { useState } from 'react'
 
@@ -83,7 +84,7 @@ export default function TranslatePage() {
                 <p className="text-sm text-gray-500">Text Translation</p>
               </div>
             </div>
-            <a href="/main" className="social-btn px-4 py-2 bg-gray-100 text-gray-600 rounded-xl">
+            <Link href="/main" className="social-btn px-4 py-2 bg-gray-100 text-gray-600 rounded-xl">
               <i className="fas fa-home mr-2"></i>Home
             </a>
           </div>
