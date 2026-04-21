@@ -1,31 +1,6 @@
 import { NextResponse } from 'next/server'
 
-// Mock subtitle data generator
-function generateMockSRT(videoId) {
-  const timestamp = Date.now()
-  return `1
-00:00:02,000 --> 00:00:05,000
-YouTube Video: ${videoId}
-
-2
-00:00:05,500 --> 00:00:09,000
-Hello! This video is for
-
-3
-00:00:09,500 --> 00:00:13,000
-testing Burme SRT Pro!
-beautiful Myanmar subtitles!
-
-4
-00:00:13,500 --> 00:00:17,000
-This is a sample subtitle for testing.
-Perfect for Myanmar content creators!
-
-5
-00:00:17,500 --> 00:00:21,000
-Download & Share with your friends 🎬
-Made with ❤️ in Myanmar 🇲🇲`
-}
+const API_KEY = process.env.YOUTUBE_API_KEY
 
 export async function POST(request) {
   try {
@@ -33,27 +8,40 @@ export async function POST(request) {
     const { videoId } = body
 
     if (!videoId) {
-      return NextResponse.json(
-        { error: 'Video ID is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Video ID required' }, { status: 400 })
     }
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1100))
+    if (API_KEY) {
+      try {
+        const res = await fetch(
+          `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${API_KEY}&part=snippet`
+        )
+        if (res.ok) {
+          const data = await res.json()
+          if (data.items?.length > 0) {
+            const { title, description } = data.items[0].snippet
+            return NextResponse.json({
+              success: true,
+              srt: `1\n00:00:00,000 --> 00:00:03,000\n${title}\n\n2\n00:00:03,500 --> 00:00:06,000\nWelcome to Burme SRT Pro!\n\n3\n00:00:06,500 --> 00:00:10,000\n${(description || '').substring(0, 100)}\n\n4\n00:00:10,500 --> 00:00:14,000\nMade with ❤️ for Myanmar 🇲🇲`,
+              videoId,
+              title,
+              source: 'YouTube API'
+            })
+          }
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
 
-    // Generate mock SRT
-    const srt = generateMockSRT(videoId)
-
-    return NextResponse.json({ 
-      success: true, 
-      srt,
-      videoId 
+    await new Promise(r => setTimeout(r, 800))
+    return NextResponse.json({
+      success: true,
+      srt: `1\n00:00:00,500 --> 00:00:03,000\nVideo ID: ${videoId}\n\n2\n00:00:03,500 --> 00:00:06,000\nWelcome to Burme SRT Pro!\n\n3\n00:00:06,500 --> 00:00:10,000\nAdd YOUTUBE_API_KEY in Vercel\nfor real data\n\n4\n00:00:14,500 --> 00:00:18,000\nMade with ❤️ for Myanmar 🇲🇲`,
+      videoId,
+      source: API_KEY ? 'error' : 'demo'
     })
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch subtitle' },
-      { status: 500 }
-    )
+  } catch (e) {
+    return NextResponse.json({ error: 'Failed' }, { status: 500 })
   }
 }
