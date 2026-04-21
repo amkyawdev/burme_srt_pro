@@ -1,13 +1,14 @@
 import { Inter, Noto_Sans_Myanmar } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
 })
 
 const notoSansMyanmar = Noto_Sans_Myanmar({
   subsets: ['myanmar'],
+  weight: ['400', '700'],
   variable: '--font-noto-myanmar',
 })
 
@@ -25,7 +26,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="my" className={`${inter.variable} ${notoSansMyanmar.variable}`}>
       <head>
-        {/* CDN Links */}
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       </head>
