@@ -1,6 +1,6 @@
 'use client'
-import Link from 'next/link'
 
+import Link from 'next/link'
 import { useState, useRef } from 'react'
 
 export default function TTSPage() {
@@ -81,7 +81,7 @@ export default function TTSPage() {
   }
 
   const handleDownload = () => {
-    if (audioUrl && audioRef.current) {
+    if (audioUrl) {
       const a = document.createElement('a')
       a.href = audioUrl
       a.download = 'burme-tts-audio.mp3'
@@ -90,16 +90,11 @@ export default function TTSPage() {
     }
   }
 
-  const handleCopy = async () => {
-    if (!audioUrl) return
-    showToast('Audio ready - use download', 'success')
-  }
-
   return (
     <main className="min-h-screen p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="glass-card rounded-2xl p-4 mb-6">
+        <div className="glass-card rounded-2xl p-4 mb-6 shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-600 to-blue-600 flex items-center justify-center">
@@ -107,11 +102,29 @@ export default function TTSPage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-800">Text to Speech</h1>
-                <p className="text-sm text-gray-500">Generate Audio from Text</p>
+                <p className="text-sm text-gray-500">Generate Audio</p>
               </div>
             </div>
-            <Link href="/main" className="social-btn px-4 py-2 bg-gray-100 text-gray-600 rounded-xl">
-              <i className="fas fa-home mr-2"></i>Home
+            <Link href="/main" className="social-btn px-3 py-2 bg-gray-100 text-gray-600 rounded-xl">
+              <i className="fas fa-home"></i>
+            </Link>
+          </div>
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="glass-card rounded-2xl p-4 mb-6 shadow-lg">
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link href="/main" className="social-btn px-5 py-3 bg-blue-50 border-2 border-blue-200 text-blue-600 font-semibold rounded-xl flex items-center gap-2">
+              <i className="fas fa-closed-captioning"></i>
+              <span>SRT Studio</span>
+            </Link>
+            <Link href="/translate" className="social-btn px-5 py-3 bg-purple-50 border-2 border-purple-200 text-purple-600 font-semibold rounded-xl flex items-center gap-2">
+              <i className="fas fa-language"></i>
+              <span>Translate</span>
+            </Link>
+            <Link href="/tts" className="social-btn px-5 py-3 bg-cyan-50 border-2 border-cyan-200 text-cyan-600 font-semibold rounded-xl flex items-center gap-2">
+              <i className="fas fa-microphone"></i>
+              <span>Text to Speech</span>
             </Link>
           </div>
         </div>
@@ -150,24 +163,12 @@ export default function TTSPage() {
           <div className="flex justify-between text-sm text-gray-400 mb-4">
             <span>{text.length}/500 characters</span>
           </div>
-
           <div className="flex flex-wrap justify-center gap-3">
-            <button
-              onClick={() => setText('')}
-              className="social-btn px-4 py-2 bg-red-50 text-red-600 rounded-xl border border-red-200"
-            >
+            <button onClick={() => setText('')} className="social-btn px-4 py-2 bg-red-50 text-red-600 rounded-xl border border-red-200">
               <i className="fas fa-trash mr-2"></i>Clear
             </button>
-            <button
-              onClick={handleGenerate}
-              disabled={isLoading || !text.trim()}
-              className="social-btn px-6 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl"
-            >
-              {isLoading ? (
-                <><i className="fas fa-spinner fa-spin mr-2"></i>Generating...</>
-              ) : (
-                <><i className="fas fa-microphone mr-2"></i>Generate Audio</>
-              )}
+            <button onClick={handleGenerate} disabled={isLoading || !text.trim()} className="social-btn px-6 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl">
+              {isLoading ? <><i className="fas fa-spinner fa-spin mr-2"></i>Generating...</> : <><i className="fas fa-microphone mr-2"></i>Generate</>}
             </button>
           </div>
         </div>
@@ -176,33 +177,16 @@ export default function TTSPage() {
         {audioUrl && (
           <div className="glass-card rounded-2xl p-6 mb-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Generated Audio</h3>
-            
-            <audio
-              ref={audioRef}
-              src={audioUrl}
-              onEnded={() => setIsPlaying(false)}
-              className="w-full mb-4"
-              controls
-            />
-
+            <audio ref={audioRef} src={audioUrl} onEnded={() => setIsPlaying(false)} className="w-full mb-4" controls />
             <div className="flex flex-wrap justify-center gap-3">
-              <button
-                onClick={handlePlay}
-                className="social-btn px-4 py-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-200"
-              >
+              <button onClick={handlePlay} className="social-btn px-4 py-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-200">
                 <i className={`fas ${isPlaying ? 'fa-pause' : 'fa-play'} mr-2`}></i>
                 {isPlaying ? 'Pause' : 'Play'}
               </button>
-              <button
-                onClick={handleStop}
-                className="social-btn px-4 py-2 bg-gray-100 text-gray-600 rounded-xl"
-              >
+              <button onClick={handleStop} className="social-btn px-4 py-2 bg-gray-100 text-gray-600 rounded-xl">
                 <i className="fas fa-stop mr-2"></i>Stop
               </button>
-              <button
-                onClick={handleDownload}
-                className="social-btn px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-200"
-              >
+              <button onClick={handleDownload} className="social-btn px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-200">
                 <i className="fas fa-download mr-2"></i>Download
               </button>
             </div>

@@ -1,6 +1,6 @@
 'use client'
-import Link from 'next/link'
 
+import Link from 'next/link'
 import { useState } from 'react'
 
 export default function TranslatePage() {
@@ -73,7 +73,7 @@ export default function TranslatePage() {
     <main className="min-h-screen p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="glass-card rounded-2xl p-4 mb-6">
+        <div className="glass-card rounded-2xl p-4 mb-6 shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
@@ -84,8 +84,26 @@ export default function TranslatePage() {
                 <p className="text-sm text-gray-500">Text Translation</p>
               </div>
             </div>
-            <Link href="/main" className="social-btn px-4 py-2 bg-gray-100 text-gray-600 rounded-xl">
-              <i className="fas fa-home mr-2"></i>Home
+            <Link href="/main" className="social-btn px-3 py-2 bg-gray-100 text-gray-600 rounded-xl">
+              <i className="fas fa-home"></i>
+            </Link>
+          </div>
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="glass-card rounded-2xl p-4 mb-6 shadow-lg">
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link href="/main" className="social-btn px-5 py-3 bg-blue-50 border-2 border-blue-200 text-blue-600 font-semibold rounded-xl flex items-center gap-2">
+              <i className="fas fa-closed-captioning"></i>
+              <span>SRT Studio</span>
+            </Link>
+            <Link href="/translate" className="social-btn px-5 py-3 bg-purple-50 border-2 border-purple-200 text-purple-600 font-semibold rounded-xl flex items-center gap-2">
+              <i className="fas fa-language"></i>
+              <span>Translate</span>
+            </Link>
+            <Link href="/tts" className="social-btn px-5 py-3 bg-cyan-50 border-2 border-cyan-200 text-cyan-600 font-semibold rounded-xl flex items-center gap-2">
+              <i className="fas fa-microphone"></i>
+              <span>Text to Speech</span>
             </Link>
           </div>
         </div>
@@ -134,35 +152,17 @@ export default function TranslatePage() {
           </div>
           
           <div className="flex flex-wrap justify-center gap-3 mt-4">
-            <button
-              onClick={handleSwap}
-              className="social-btn px-4 py-2 bg-gray-100 text-gray-600 rounded-xl"
-            >
+            <button onClick={handleSwap} className="social-btn px-4 py-2 bg-gray-100 text-gray-600 rounded-xl">
               <i className="fas fa-exchange-alt mr-2"></i>Swap
             </button>
-            <button
-              onClick={handleClear}
-              className="social-btn px-4 py-2 bg-red-50 text-red-600 rounded-xl border border-red-200"
-            >
+            <button onClick={handleClear} className="social-btn px-4 py-2 bg-red-50 text-red-600 rounded-xl border border-red-200">
               <i className="fas fa-trash mr-2"></i>Clear
             </button>
-            <button
-              onClick={handleCopy}
-              className="social-btn px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-200"
-              disabled={!outputText}
-            >
+            <button onClick={handleCopy} className="social-btn px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-200" disabled={!outputText}>
               <i className="fas fa-copy mr-2"></i>Copy
             </button>
-            <button
-              onClick={handleTranslate}
-              disabled={isLoading || !inputText.trim()}
-              className="social-btn px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl"
-            >
-              {isLoading ? (
-                <><i className="fas fa-spinner fa-spin mr-2"></i>Translating...</>
-              ) : (
-                <><i className="fas fa-language mr-2"></i>Translate</>
-              )}
+            <button onClick={handleTranslate} disabled={isLoading || !inputText.trim()} className="social-btn px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl">
+              {isLoading ? <><i className="fas fa-spinner fa-spin mr-2"></i>Translating...</> : <><i className="fas fa-language mr-2"></i>Translate</>}
             </button>
           </div>
         </div>

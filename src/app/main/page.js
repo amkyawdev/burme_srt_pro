@@ -130,7 +130,7 @@ export default function MainPage() {
                 <p className="text-sm text-gray-500">SRT Studio</p>
               </div>
             </div>
-            <Link href="/main" className="social-btn px-3 py-2 bg-gray-100 text-gray-600 rounded-xl">
+            <Link href="/" className="social-btn px-3 py-2 bg-gray-100 text-gray-600 rounded-xl">
               <i className="fas fa-sign-out-alt"></i>
             </Link>
           </div>
@@ -139,7 +139,7 @@ export default function MainPage() {
         {/* Navigation Buttons */}
         <div className="glass-card rounded-2xl p-4 mb-6 shadow-lg">
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/main" className="social-btn px-5 py-3 bg-blue-50 border-2 border-blue-200 text-blue-600 font-semibold rounded-xl flex items-center gap-2">
+            <Link href="/" className="social-btn px-5 py-3 bg-blue-50 border-2 border-blue-200 text-blue-600 font-semibold rounded-xl flex items-center gap-2">
               <i className="fas fa-closed-captioning"></i>
               <span>SRT Studio</span>
             </Link>
