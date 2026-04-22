@@ -12,7 +12,7 @@ export async function POST(request) {
     // Handle TTS action
     if (action === 'tts') {
       if (!ELEVENLABS_API_KEY) {
-        return NextResponse.json({ success: false, error: 'ElevenLabs API key needed' })
+        return NextResponse.json({ success: false, error: 'Set ELEVENLABS_API_KEY in Vercel settings' })
       }
       if (!text) return NextResponse.json({ success: false, error: 'Text required' })
 
@@ -43,57 +43,58 @@ export async function POST(request) {
       }
     }
 
-    // Handle Translation action
+    // Handle Translation action - Mock translation for demo
     if (action === 'translate') {
-      // Mock translation if no API key
-      if (!GEMINI_API_KEY) {
-        // Simple mock for demo
-        const mockTranslations = {
-          'Myanmar': text,
-          'English': text,
-          'Chinese': text,
-          'Japanese': text,
-          'Korean': text
+      if (!text) return NextResponse.json({ success: false, error: 'Text required' })
+      
+      const target = translateTo || 'Myanmar'
+      
+      // If API key exists, try real translation
+      if (GEMINI_API_KEY && GEMINI_API_KEY.length > 10) {
+        try {
+          const prompt = `Translate this to ${target}: "${text}"`
+          
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { temperature: 0.3, maxOutputTokens: 1024 }
+              })
+            }
+          )
+
+          if (geminiRes.ok) {
+            const data = await geminiRes.json()
+            const result = data.candidates?.[0]?.content?.parts?.[0]?.text
+            if (result) {
+              return NextResponse.json({ success: true, translatedText: result.trim() })
+            }
+          }
+        } catch (e) {
+          console.log('Gemini error:', e)
         }
-        const target = translateTo || 'Myanmar'
-        return NextResponse.json({ success: true, translatedText: mockTranslations[target] || text })
       }
       
-      if (!text) return NextResponse.json({ success: false, error: 'Text required' })
-
-      try {
-        const targetLang = translateTo || 'Myanmar'
-        
-        // Use simple prompt format
-        const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: `Translate: ${text} → ${targetLang}` }] }],
-              generationConfig: { temperature: 0.3, maxOutputTokens: 1024 }
-            })
-          }
-        )
-
-        if (geminiRes.ok) {
-          const geminiData = await geminiRes.json()
-          const translatedText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text
-          if (translatedText) {
-            return NextResponse.json({ success: true, translatedText: translatedText.trim() })
-          }
-        }
-        
-        // Fallback - return original if API fails
-        return NextResponse.json({ success: true, translatedText: text })
-      } catch (e) {
-        // Fallback
-        return NextResponse.json({ success: true, translatedText: text })
+      // Mock translations for demo
+      const mockLang = {
+        'Myanmar': 'မြန်မာဘာသာပြန်လိုက်ပါတယ်',
+        'English': 'Translated to English',
+        'Chinese': '已翻译成中文',
+        'Japanese': '日本語に翻訳されました',
+        'Korean': '한국어로 번역됨'
       }
+      
+      return NextResponse.json({ 
+        success: true, 
+        translatedText: mockLang[target] || text,
+        note: 'Set GEMINI_API_KEY for real translation'
+      })
     }
 
-    // Handle SRT from YouTube link
+    // Handle SRT from YouTube
     let videoIdToUse = videoId
     if (youtubeLink) {
       const match = youtubeLink.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
@@ -120,7 +121,6 @@ export async function POST(request) {
       } catch (e) {}
     }
 
-    // Demo SRT
     return NextResponse.json({
       success: true,
       srt: `1
