@@ -7,31 +7,22 @@ module.exports = {
   ],
   theme: {
     extend: {
-      borderRadius: {
-        '2xl': '2rem',
+      fontFamily: {
+        sans: ['Inter', 'Noto Sans Myanmar', 'sans-serif'],
       },
-      colors: {
-        'particle-1': '#88bbff',
-        'particle-2': '#c2e0ff',
+      borderRadius: {
+        '2xl': '1rem',
+        '3xl': '1.5rem',
+        '4xl': '2rem',
       },
       animation: {
-        'subtitle-appear': 'subtitleAppear 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
-        'pulse-fetch': 'pulseFetch 0.8s ease-in-out infinite',
-        'toast-slide': 'toastSlide 0.3s ease-out',
+        'float': 'float 3s ease-in-out infinite',
+        'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
       },
-      keyframes: {
-        subtitleAppear: {
-          '0%': { transform: 'scale(0.9)', opacity: '0' },
-          '100%': { transform: 'scale(1)', opacity: '1' },
-        },
-        pulseFetch: {
-          '0%, 100%': { transform: 'scale(1)', opacity: '1' },
-          '50%': { transform: 'scale(1.02)', opacity: '0.8' },
-        },
-        toastSlide: {
-          'from': { transform: 'translateY(20px)', opacity: '0' },
-          'to': { transform: 'translateY(0)', opacity: '1' },
-        },
+      boxShadow: {
+        'btn': '0 6px 14px rgba(0, 0, 0, 0.08)',
+        'btn-hover': '0 8px 20px rgba(0, 0, 0, 0.12)',
+        'btn-active': '0 2px 8px rgba(0, 0, 0, 0.1)',
       },
     },
   },
