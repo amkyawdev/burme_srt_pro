@@ -26,9 +26,9 @@ export default function TTSPage() {
     { id: 'cRDlDclOWrAANzGnzE', name: 'Sarah' },
   ]
 
-  const showToast = (message, type) => {
-    setToast({ show: true, message, type })
-    setTimeout(() => setToast({ show: false, message: '', type: '' }), 2500)
+  const showToast = (msg, type) => {
+    setToast({ show: true, message: msg, type })
+    setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000)
   }
 
   const handleGenerate = async () => {
@@ -54,16 +54,20 @@ export default function TTSPage() {
       })
 
       const data = await response.json()
+      console.log('TTS Response:', data)
 
       if (data.success && data.audio) {
         setAudioUrl(data.audio)
         showToast('Audio generated!', 'success')
       } else {
-        setError(data.error || 'Generation failed - check API key')
-        showToast(data.error || 'Generation failed', 'error')
+        // Show error message from API
+        const errMsg = data.error || 'Generation failed'
+        setError(errMsg)
+        showToast(errMsg, 'error')
       }
     } catch (err) {
-      setError('Network error')
+      console.error('TTS Error:', err)
+      setError('Network error - please check API key')
       showToast('Network error', 'error')
     } finally {
       setIsLoading(false)
@@ -196,6 +200,7 @@ export default function TTSPage() {
           
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+              <i className="fas fa-exclamation-circle mr-2"></i>
               {error}
             </div>
           )}
@@ -237,9 +242,12 @@ export default function TTSPage() {
         </div>
       </div>
 
+      {/* Toast */}
       {toast.show && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-xl z-50">
-          <i className={`fas ${toast.type === 'success' ? 'fa-check-circle text-emerald-400' : 'fa-exclamation-circle text-red-400'} mr-2`}></i>
+        <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-xl shadow-xl z-50 ${
+          toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
+        }`}>
+          <i className={`fas ${toast.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2`}></i>
           {toast.message}
         </div>
       )}
