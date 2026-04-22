@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { useState, useRef } from 'react'
+import Link from 'next/link'
 
 export default function TTSPage() {
   const [text, setText] = useState('')
@@ -13,13 +13,11 @@ export default function TTSPage() {
   const [error, setError] = useState('')
   const audioRef = useRef(null)
 
-  // Burmese voices
   const burmeseVoices = [
     { id: 'pNInz6ogphA2injdU1Kh', name: 'Thi Ha', gender: 'Boy' },
     { id: 'cgSgspmF5nEAl3hHy3UKj52VjhHpN3u2o', name: 'Nilar', gender: 'Girl' },
   ]
 
-  // English voices
   const englishVoices = [
     { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel' },
     { id: 'AZnzlk1Xvlr_ohmBJOsoN', name: 'Arnold' },
@@ -28,7 +26,7 @@ export default function TTSPage() {
 
   const showToast = (msg, type) => {
     setToast({ show: true, message: msg, type })
-    setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000)
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000)
   }
 
   const handleGenerate = async () => {
@@ -40,7 +38,6 @@ export default function TTSPage() {
     }
 
     setIsLoading(true)
-    setAudioUrl(null)
 
     try {
       const response = await fetch('/api/subtitle', {
@@ -54,20 +51,16 @@ export default function TTSPage() {
       })
 
       const data = await response.json()
-      console.log('TTS Response:', data)
 
       if (data.success && data.audio) {
         setAudioUrl(data.audio)
         showToast('Audio generated!', 'success')
       } else {
-        // Show error message from API
-        const errMsg = data.error || 'Generation failed'
-        setError(errMsg)
-        showToast(errMsg, 'error')
+        setError(data.error || 'Generation failed')
+        showToast(data.error || 'Failed', 'error')
       }
     } catch (err) {
-      console.error('TTS Error:', err)
-      setError('Network error - please check API key')
+      setError('Network error: ' + err.message)
       showToast('Network error', 'error')
     } finally {
       setIsLoading(false)
@@ -75,14 +68,14 @@ export default function TTSPage() {
   }
 
   const handlePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause()
-        setIsPlaying(false)
-      } else {
-        audioRef.current.play()
-        setIsPlaying(true)
-      }
+    if (!audioRef.current || !audioUrl) return
+    
+    if (isPlaying) {
+      audioRef.current.pause()
+      setIsPlaying(false)
+    } else {
+      audioRef.current.play()
+      setIsPlaying(true)
     }
   }
 
@@ -95,19 +88,18 @@ export default function TTSPage() {
   }
 
   const handleDownload = () => {
-    if (audioUrl) {
-      const a = document.createElement('a')
-      a.href = audioUrl
-      a.download = 'burme-tts.mp3'
-      a.click()
-    }
+    if (!audioUrl) return
+    const a = document.createElement('a')
+    a.href = audioUrl
+    a.download = 'burme-tts.mp3'
+    a.click()
   }
 
   return (
     <main className="min-h-screen p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="glass-card rounded-2xl p-4 mb-6 shadow-lg">
+        <div className="glass-card rounded-2xl p-4 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-600 to-blue-600 flex items-center justify-center">
@@ -125,16 +117,16 @@ export default function TTSPage() {
         </div>
 
         {/* Navigation */}
-        <div className="glass-card rounded-2xl p-4 mb-6 shadow-lg">
+        <div className="glass-card rounded-2xl p-4 mb-6">
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/main" className="social-btn px-5 py-3 bg-blue-50 border-2 border-blue-200 text-blue-600 font-semibold rounded-xl flex items-center gap-2">
-              <i className="fas fa-closed-captioning"></i><span>SRT</span>
+            <Link href="/main" className="social-btn px-5 py-3 bg-blue-50 border-2 border-blue-200 text-blue-600 font-semibold rounded-xl">
+              <i className="fas fa-closed-captioning mr-2"></i>SRT
             </Link>
-            <Link href="/translate" className="social-btn px-5 py-3 bg-purple-50 border-2 border-purple-200 text-purple-600 font-semibold rounded-xl flex items-center gap-2">
-              <i className="fas fa-language"></i><span>Translate</span>
+            <Link href="/translate" className="social-btn px-5 py-3 bg-purple-50 border-2 border-purple-200 text-purple-600 font-semibold rounded-xl">
+              <i className="fas fa-language mr-2"></i>Translate
             </Link>
-            <Link href="/tts" className="social-btn px-5 py-3 bg-cyan-50 border-2 border-cyan-200 text-cyan-600 font-semibold rounded-xl flex items-center gap-2">
-              <i className="fas fa-microphone"></i><span>TTS</span>
+            <Link href="/tts" className="social-btn px-5 py-3 bg-cyan-50 border-2 border-cyan-200 text-cyan-600 font-semibold rounded-xl">
+              <i className="fas fa-microphone mr-2"></i>TTS
             </Link>
           </div>
         </div>
@@ -145,18 +137,18 @@ export default function TTSPage() {
             <i className="fas fa-flag text-red-500 mr-2"></i>Burmese Voices:
           </label>
           <div className="grid grid-cols-2 gap-2">
-            {burmeseVoices.map(voice => (
+            {burmeseVoices.map(v => (
               <button
-                key={voice.id}
-                onClick={() => setVoiceId(voice.id)}
+                key={v.id}
+                onClick={() => setVoiceId(v.id)}
                 className={`p-3 rounded-xl text-center transition ${
-                  voiceId === voice.id
+                  voiceId === v.id
                     ? 'bg-red-600 text-white'
                     : 'bg-white text-gray-600 border border-gray-200'
                 }`}
               >
-                <div className="font-medium">{voice.name}</div>
-                <div className="text-xs opacity-70">{voice.gender}</div>
+                <div className="font-medium">{v.name}</div>
+                <div className="text-xs opacity-70">{v.gender}</div>
               </button>
             ))}
           </div>
@@ -168,17 +160,17 @@ export default function TTSPage() {
             <i className="fas fa-globe text-blue-500 mr-2"></i>English Voices:
           </label>
           <div className="grid grid-cols-3 gap-2">
-            {englishVoices.map(voice => (
+            {englishVoices.map(v => (
               <button
-                key={voice.id}
-                onClick={() => setVoiceId(voice.id)}
+                key={v.id}
+                onClick={() => setVoiceId(v.id)}
                 className={`p-3 rounded-xl text-center transition ${
-                  voiceId === voice.id
+                  voiceId === v.id
                     ? 'bg-cyan-600 text-white'
                     : 'bg-white text-gray-600 border border-gray-200'
                 }`}
               >
-                <div className="font-medium">{voice.name}</div>
+                <div className="font-medium">{v.name}</div>
               </button>
             ))}
           </div>
@@ -194,23 +186,31 @@ export default function TTSPage() {
             placeholder="Type text here..."
             maxLength={500}
           />
-          <div className="flex justify-between text-sm text-gray-400 mb-4">
-            <span>{text.length}/500</span>
-          </div>
+          <div className="text-sm text-gray-400 mb-4">{text.length}/500</div>
           
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-              <i className="fas fa-exclamation-circle mr-2"></i>
-              {error}
+              <i className="fas fa-exclamation-circle mr-2"></i>{error}
             </div>
           )}
           
           <div className="flex flex-wrap justify-center gap-3">
-            <button onClick={() => { setText(''); setError(''); }} className="social-btn px-4 py-2 bg-red-50 text-red-600 rounded-xl border border-red-200">
+            <button 
+              onClick={() => { setText(''); setError(''); }} 
+              className="social-btn px-4 py-2 bg-red-50 text-red-600 rounded-xl border border-red-200"
+            >
               <i className="fas fa-trash mr-2"></i>Clear
             </button>
-            <button onClick={handleGenerate} disabled={isLoading || !text.trim()} className="social-btn px-6 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl disabled:opacity-50">
-              {isLoading ? <><i className="fas fa-spinner fa-spin mr-2"></i>Generating...</> : <><i className="fas fa-microphone mr-2"></i>Generate</>}
+            <button 
+              onClick={handleGenerate} 
+              disabled={isLoading || !text.trim()} 
+              className="social-btn px-6 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl disabled:opacity-50"
+            >
+              {isLoading ? (
+                <><i className="fas fa-spinner fa-spin mr-2"></i>Generating...</>
+              ) : (
+                <><i className="fas fa-microphone mr-2"></i>Generate</>
+              )}
             </button>
           </div>
         </div>
@@ -219,10 +219,17 @@ export default function TTSPage() {
         {audioUrl && (
           <div className="glass-card rounded-2xl p-6 mb-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Generated Audio</h3>
-            <audio ref={audioRef} src={audioUrl} onEnded={() => setIsPlaying(false)} className="w-full mb-4" controls />
+            <audio 
+              ref={audioRef} 
+              src={audioUrl} 
+              onEnded={() => setIsPlaying(false)} 
+              className="w-full mb-4" 
+              controls 
+            />
             <div className="flex flex-wrap justify-center gap-3">
               <button onClick={handlePlay} className="social-btn px-4 py-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-200">
-                <i className={`fas ${isPlaying ? 'fa-pause' : 'fa-play'} mr-2`}></i>{isPlaying ? 'Pause' : 'Play'}
+                <i className={`fas ${isPlaying ? 'fa-pause' : 'fa-play'} mr-2`}></i>
+                {isPlaying ? 'Pause' : 'Play'}
               </button>
               <button onClick={handleStop} className="social-btn px-4 py-2 bg-gray-100 text-gray-600 rounded-xl">
                 <i className="fas fa-stop mr-2"></i>Stop
@@ -234,7 +241,6 @@ export default function TTSPage() {
           </div>
         )}
 
-        {/* Footer */}
         <div className="glass-card rounded-2xl p-4 text-center">
           <p className="text-xs text-gray-400">
             <i className="fas fa-heart text-red-500 mr-1"></i>Powered by ElevenLabs AI
